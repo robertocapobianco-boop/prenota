@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Prenota un appuntamento — Roberto Capobianco</title>
+  <meta name="description" content="Scegli data e orario disponibile per fissare un appuntamento con Roberto Capobianco">
+  
+  <meta property="og:title" content="Fissa un appuntamento con Roberto Capobianco">
+  <meta property="og:description" content="Scegli data e orario disponibile per prenotare">
+  <meta property="og:image" content="https://robertocapobianco-boop.github.io/prenota/og-image.jpg">
+  <meta property="og:image:width" content="1080">
+  <meta property="og:image:height" content="720">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="it_IT">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Fissa un appuntamento con Roberto Capobianco">
+  <meta name="twitter:image" content="https://robertocapobianco-boop.github.io/prenota/og-image.jpg">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --blue: #007AFF;
+      --green: #34C759;
+      --red: #FF3B30;
+      --bg: #ffffff;
+      --card: #f5f5f7;
+      --text: #1d1d1f;
+      --text2: #86868b;
+      --border: #e5e5e7;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .container {
+      max-width: 440px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+    
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header .avatar {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 20px;
+      margin: 0 auto 12px;
+    }
+    .header h1 {
+      font-size: 20px; font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .header p {
+      font-size: 14px; color: var(--text2);
+    }
+    
+    /* Calendar */
+    .calendar-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .calendar-nav h2 {
+      font-size: 16px; font-weight: 600;
+    }
+    .calendar-nav button {
+      width: 32px; height: 32px; border: none; background: var(--card);
+      border-radius: 50%; cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--blue); font-weight: 600;
+    }
+    
+    .weekdays {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      text-align: center; margin-bottom: 4px;
+    }
+    .weekdays span {
+      font-size: 11px; font-weight: 600; color: var(--text2);
+      padding: 6px 0; text-transform: uppercase;
+    }
+    .weekdays span:nth-child(6), .weekdays span:nth-child(7) {
+      color: #ccc;
+    }
+    
+    .days {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 2px; margin-bottom: 16px;
+    }
+    .day {
+      aspect-ratio: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border-radius: 50%; font-size: 15px; font-weight: 500;
+      cursor: default; position: relative; border: none; background: none;
+    }
+    .day.empty { visibility: hidden; }
+    .day.past { color: #ccc; }
+    .day.available { cursor: pointer; color: var(--text); }
+    .day.available:hover { background: #f0f0f2; }
+    .day.available .dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--green); position: absolute; bottom: 4px;
+    }
+    .day.selected {
+      background: var(--blue); color: white;
+    }
+    .day.selected .dot { background: white; }
+    .day.today {
+      background: var(--red); color: white; font-weight: 700;
+    }
+    
+    .legend {
+      display: flex; gap: 16px; justify-content: center;
+      margin-bottom: 20px; font-size: 12px; color: var(--text2);
+    }
+    .legend span { display: flex; align-items: center; gap: 4px; }
+    .legend .dot-green { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+    .legend .dot-blue { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); }
+    
+    /* Time slots */
+    .section-title {
+      font-size: 13px; font-weight: 600; color: var(--text2);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    
+    .time-slots {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 8px; margin-bottom: 20px;
+    }
+    .time-slot {
+      padding: 12px 8px; border-radius: 10px;
+      background: var(--card); border: 2px solid transparent;
+      text-align: center; cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .time-slot:hover { border-color: var(--blue); }
+    .time-slot.selected { background: var(--blue); color: white; border-color: var(--blue); }
+    .time-slot .time { font-size: 15px; font-weight: 600; }
+    .time-slot .meta { font-size: 11px; color: var(--text2); margin-top: 2px; }
+    .time-slot.selected .meta { color: rgba(255,255,255,0.8); }
+    
+    .no-slots {
+      text-align: center; padding: 24px; color: var(--text2);
+      font-size: 14px;
+    }
+    
+    /* Form */
+    .form { margin-top: 16px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: var(--text2); margin-bottom: 4px; text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .form-group input {
+      width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
+      border-radius: 10px; font-size: 15px; font-family: inherit;
+      outline: none; transition: border-color 0.15s;
+      background: var(--bg);
+    }
+    .form-group input:focus { border-color: var(--blue); }
+    .form-group input.required-highlight {
+      border-color: #007AFF40; background: #007AFF08;
+    }
+    
+    .meet-notice {
+      display: flex; align-items: flex-start; gap: 8px;
+      background: #007AFF10; border: 1px solid #007AFF30;
+      border-radius: 10px; padding: 10px 12px; margin-bottom: 16px;
+      font-size: 12px; color: #007AFF;
+    }
+    .meet-notice svg { flex-shrink: 0; margin-top: 1px; }
+    
+    .btn-book {
+      width: 100%; padding: 14px; border: none;
+      background: var(--blue); color: white;
+      border-radius: 12px; font-size: 16px; font-weight: 600;
+      font-family: inherit; cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-book:disabled {
+      opacity: 0.4; cursor: not-allowed;
+    }
+    .btn-book:not(:disabled):hover { opacity: 0.9; }
+    
+    /* Success */
+    .success-card {
+      text-align: center; padding: 32px 16px;
+    }
+    .success-card .icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: var(--green); color: white;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px; font-size: 28px;
+    }
+    .success-card h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .success-card p { font-size: 14px; color: var(--text2); margin-bottom: 16px; }
+    .success-card .detail-box {
+      background: var(--card); border-radius: 12px; padding: 16px;
+      text-align: left; margin-bottom: 16px;
+    }
+    .success-card .detail-row {
+      display: flex; justify-content: space-between;
+      padding: 6px 0; font-size: 14px;
+    }
+    .success-card .detail-row .label { color: var(--text2); }
+    .success-card .detail-row .value { font-weight: 600; }
+    .btn-meet {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 12px 24px; background: var(--blue); color: white;
+      border-radius: 10px; text-decoration: none; font-weight: 600;
+      font-size: 14px; margin-top: 8px;
+    }
+    
+    /* Loading */
+    .loading {
+      text-align: center; padding: 60px 20px; color: var(--text2);
+    }
+    .spinner {
+      width: 32px; height: 32px; border: 3px solid var(--border);
+      border-top-color: var(--blue); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    /* Error */
+    .error-msg {
+      background: #FF3B3010; border: 1px solid #FF3B3030;
+      color: var(--red); padding: 10px 12px; border-radius: 10px;
+      font-size: 13px; margin-bottom: 12px; text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Caricamento disponibilità...</p>
+    </div>
+  </div>
+
+  <script>
+    // ========== CONFIG ==========
+    const APPS_SCRIPT_URL = 'INSERISCI_QUI_URL_APPS_SCRIPT';
+    
+    const MONTHS_IT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+    const DAYS_IT = ['L','M','M','G','V','S','D'];
+    
+    // ========== STATE ==========
+    let slots = [];
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    let selectedDate = null;
+    let selectedSlot = null;
+    let booking = false;
+    let bookingResult = null;
+    let errorMsg = '';
+    
+    // ========== INIT ==========
+    async function init() {
+      try {
+        const res = await fetch(APPS_SCRIPT_URL + '?action=getSlots');
+        const data = await res.json();
+        slots = data.slots || [];
+        render();
+      } catch (e) {
+        document.getElementById('app').innerHTML = '<div class="loading"><p>Errore nel caricamento. Riprova più tardi.</p></div>';
+      }
+    }
+    
+    // ========== RENDER ==========
+    function render() {
+      if (bookingResult) {
+        renderSuccess();
+        return;
+      }
+      
+      const app = document.getElementById('app');
+      const availDates = new Set(slots.map(s => s.date));
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+      
+      // Calendar
+      const firstDay = new Date(currentYear, currentMonth, 1);
+      let startDay = firstDay.getDay() - 1;
+      if (startDay < 0) startDay = 6;
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      
+      let daysHTML = '';
+      for (let i = 0; i < startDay; i++) {
+        daysHTML += '<div class="day empty"></div>';
+      }
+      for (let d = 1; d <= daysInMonth; d++) {
+        const ds = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const isToday = ds === todayStr;
+        const isPast = new Date(ds) < new Date(todayStr);
+        const isAvail = availDates.has(ds) && !isPast;
+        const isSel = ds === selectedDate;
+        
+        let cls = 'day';
+        if (isPast && !isToday) cls += ' past';
+        if (isAvail) cls += ' available';
+        if (isSel) cls += ' selected';
+        if (isToday && !isSel) cls += ' today';
+        
+        daysHTML += `<button class="${cls}" ${isAvail ? `onclick="selectDate('${ds}')"` : ''}>
+          ${d}${isAvail ? '<span class="dot"></span>' : ''}
+        </button>`;
+      }
+      
+      // Time slots for selected date
+      let timeSlotsHTML = '';
+      if (selectedDate) {
+        const daySlots = slots.filter(s => s.date === selectedDate);
+        if (daySlots.length > 0) {
+          timeSlotsHTML = '<p class="section-title">Orari disponibili</p><div class="time-slots">';
+          for (const s of daySlots) {
+            const isSel = selectedSlot && selectedSlot.id === s.id;
+            const typeIcon = s.type === 'meet' ? '📹' : s.type === 'call' ? '📞' : '📍';
+            const typeLabel = s.type === 'meet' ? 'Meet' : s.type === 'call' ? 'Chiamata' : 'In presenza';
+            timeSlotsHTML += `<button class="time-slot${isSel ? ' selected' : ''}" onclick="selectSlot('${s.id}')">
+              <div class="time">${s.startTime}</div>
+              <div class="meta">${typeIcon} ${typeLabel}</div>
+            </button>`;
+          }
+          timeSlotsHTML += '</div>';
+        }
+      } else {
+        timeSlotsHTML = '<p class="no-slots">Seleziona una data verde per vedere gli orari</p>';
+      }
+      
+      // Form
+      let formHTML = '';
+      if (selectedSlot) {
+        const isMeet = selectedSlot.type === 'meet';
+        formHTML = '<div class="form">';
+        if (isMeet) {
+          formHTML += `<div class="meet-notice">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg>
+            <span>Inserisci la tua email per ricevere il link Google Meet e l'invito nel calendario.</span>
+          </div>`;
+        }
+        if (errorMsg) {
+          formHTML += `<div class="error-msg">${errorMsg}</div>`;
+        }
+        formHTML += `
+          <div class="form-group">
+            <label>Il tuo nome *</label>
+            <input type="text" id="inp-name" placeholder="Mario Rossi" required>
+          </div>
+          <div class="form-group">
+            <label>La tua email *${isMeet ? ' (per il link Meet)' : ''}</label>
+            <input type="email" id="inp-email" placeholder="mario@email.com" class="${isMeet ? 'required-highlight' : ''}" required>
+          </div>
+          <div class="form-group">
+            <label>Il tuo telefono</label>
+            <input type="tel" id="inp-phone" placeholder="+39 333 ...">
+          </div>
+          <button class="btn-book" id="btn-book" onclick="doBook()" ${booking ? 'disabled' : ''}>
+            ${booking ? '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto"></div>' : '✓ Conferma prenotazione'}
+          </button>
+        `;
+        formHTML += '</div>';
+      }
+      
+      app.innerHTML = `
+        <div class="header">
+          <div class="avatar">RC</div>
+          <h1>Prenota un appuntamento</h1>
+          <p>Roberto Capobianco</p>
+        </div>
+        
+        <div class="calendar-nav">
+          <button onclick="prevMonth()">‹</button>
+          <h2>${MONTHS_IT[currentMonth]} ${currentYear}</h2>
+          <button onclick="nextMonth()">›</button>
+        </div>
+        
+        <div class="weekdays">
+          ${DAYS_IT.map(d => `<span>${d}</span>`).join('')}
+        </div>
+        
+        <div class="days">${daysHTML}</div>
+        
+        <div class="legend">
+          <span><span class="dot-green"></span> Disponibile</span>
+          <span><span class="dot-blue"></span> Selezionato</span>
+        </div>
+        
+        ${timeSlotsHTML}
+        ${formHTML}
+      `;
+    }
+    
+    function renderSuccess() {
+      const r = bookingResult;
+      const typeLabel = r.type === 'meet' ? 'Videochiamata' : r.type === 'call' ? 'Chiamata' : 'In presenza';
+      const dateFormatted = formatDateIT(r.date);
+      
+      let meetBtn = '';
+      if (r.meetLink) {
+        meetBtn = `<a href="${r.meetLink}" target="_blank" class="btn-meet">
+          🎥 Apri Google Meet
+        </a>`;
+      }
+      
+      document.getElementById('app').innerHTML = `
+        <div class="success-card">
+          <div class="icon">✓</div>
+          <h2>Prenotazione confermata!</h2>
+          <p>Riceverai un'email di conferma e un invito nel tuo calendario.</p>
+          <div class="detail-box">
+            <div class="detail-row"><span class="label">📅 Data</span><span class="value">${dateFormatted}</span></div>
+            <div class="detail-row"><span class="label">🕐 Orario</span><span class="value">${r.startTime} - ${r.endTime}</span></div>
+            <div class="detail-row"><span class="label">📍 Tipo</span><span class="value">${typeLabel}</span></div>
+          </div>
+          ${meetBtn}
+        </div>
+      `;
+    }
+    
+    // ========== ACTIONS ==========
+    function selectDate(d) {
+      selectedDate = d;
+      selectedSlot = null;
+      errorMsg = '';
+      render();
+    }
+    
+    function selectSlot(id) {
+      selectedSlot = slots.find(s => s.id === id) || null;
+      errorMsg = '';
+      render();
+    }
+    
+    function prevMonth() {
+      currentMonth--;
+      if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+      selectedDate = null; selectedSlot = null;
+      render();
+    }
+    
+    function nextMonth() {
+      currentMonth++;
+      if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+      selectedDate = null; selectedSlot = null;
+      render();
+    }
+    
+    async function doBook() {
+      const name = document.getElementById('inp-name')?.value?.trim();
+      const email = document.getElementById('inp-email')?.value?.trim();
+      const phone = document.getElementById('inp-phone')?.value?.trim();
+      
+      if (!name) { errorMsg = 'Inserisci il tuo nome'; render(); return; }
+      if (!email || !email.includes('@')) { errorMsg = 'Inserisci un\'email valida'; render(); return; }
+      if (!selectedSlot) return;
+      
+      booking = true; errorMsg = '';
+      render();
+      
+      try {
+        const res = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' }, // Apps Script requires text/plain for CORS
+          body: JSON.stringify({
+            action: 'book',
+            slotId: selectedSlot.id,
+            name, email, phone
+          })
+        });
+        const data = await res.json();
+        
+        if (data.error) {
+          errorMsg = data.error;
+          booking = false;
+          render();
+        } else {
+          bookingResult = data;
+          render();
+        }
+      } catch (e) {
+        errorMsg = 'Errore di rete. Riprova.';
+        booking = false;
+        render();
+      }
+    }
+    
+    function formatDateIT(dateStr) {
+      const d = new Date(dateStr + 'T00:00:00');
+      return d.getDate() + ' ' + MONTHS_IT[d.getMonth()] + ' ' + d.getFullYear();
+    }
+    
+    // ========== START ==========
+    init();
+  </script>
+</body>
+</html>
